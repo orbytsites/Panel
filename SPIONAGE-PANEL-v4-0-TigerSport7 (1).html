@@ -1,0 +1,1929 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPIONAGE PANEL v4.0 | TigerSport7</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --bg-primary: #05080f;
+            --bg-secondary: #0b1221;
+            --bg-card: #111827;
+            --border: rgba(59, 130, 246, 0.12);
+            --border-active: rgba(59, 130, 246, 0.5);
+            --blue-400: #60a5fa;
+            --blue-500: #3b82f6;
+            --blue-600: #2563eb;
+            --green: #10b981;
+            --red: #ef4444;
+            --yellow: #f59e0b;
+            --purple: #a855f7;
+            --text-primary: #e2e8f0;
+            --text-secondary: #64748b;
+            --glow-blue: 0 0 20px rgba(59, 130, 246, 0.3);
+            --glow-red: 0 0 15px rgba(239, 68, 68, 0.4);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Scanline Effect */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(59, 130, 246, 0.02) 2px,
+                rgba(59, 130, 246, 0.02) 4px
+            );
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* Grid Background */
+        .grid-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Header */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 0.8rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+            background: rgba(5, 8, 15, 0.9);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 42px; height: 42px;
+            background: linear-gradient(135deg, var(--blue-500), var(--blue-700));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            box-shadow: var(--glow-blue);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .logo-text h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        .logo-text span {
+            font-size: 0.65rem;
+            color: var(--blue-400);
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 2px;
+        }
+
+        .header-status {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.7rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .status-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .status-dot.green { background: var(--green); box-shadow: 0 0 8px var(--green); }
+        .status-dot.red { background: var(--red); box-shadow: 0 0 8px var(--red); }
+        .status-dot.yellow { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+
+        .datetime {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--blue-400);
+        }
+
+        /* Main Layout */
+        .main-container {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 320px 1fr 340px;
+            gap: 1rem;
+            padding: 1rem;
+            height: calc(100vh - 65px);
+            overflow: hidden;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            border-color: var(--border-active);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
+        }
+
+        .card-header {
+            padding: 0.7rem 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(17, 24, 39, 0.5);
+        }
+
+        .card-header h3 {
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-body {
+            padding: 1rem;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* Left Sidebar */
+        .sidebar-left {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* Target Input */
+        .target-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            background: rgba(10, 14, 23, 0.8);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .input-wrapper input:focus {
+            border-color: var(--blue-500);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .input-wrapper .icon {
+            position: absolute;
+            left: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.85rem;
+            opacity: 0.5;
+        }
+
+        .btn {
+            padding: 0.7rem 1rem;
+            border: none;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--blue-500), var(--blue-700));
+            color: white;
+            box-shadow: 0 2px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 4px 25px rgba(59, 130, 246, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--red), #dc2626);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--green), #059669);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.7rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .stat-box {
+            background: rgba(10, 14, 23, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.8rem;
+            text-align: center;
+        }
+
+        .stat-box .value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--blue-400);
+        }
+
+        .stat-box .label {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            margin-top: 0.2rem;
+        }
+
+        /* Activity Log */
+        .activity-log {
+            max-height: 200px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--blue-600) transparent;
+        }
+
+        .log-entry {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            font-size: 0.72rem;
+            font-family: 'JetBrains Mono', monospace;
+            animation: fadeInLog 0.3s ease-out;
+        }
+
+        @keyframes fadeInLog {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .log-time {
+            color: var(--text-secondary);
+            white-space: nowrap;
+            font-size: 0.65rem;
+        }
+
+        .log-msg {
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .log-msg .highlight { color: var(--blue-400); }
+        .log-msg .success { color: var(--green); }
+        .log-msg .error { color: var(--red); }
+        .log-msg .warn { color: var(--yellow); }
+
+        /* Center - Target Preview */
+        .center-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .target-frame {
+            flex: 1;
+            position: relative;
+            min-height: 400px;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .target-frame iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+        }
+
+        .frame-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            z-index: 2;
+        }
+
+        .frame-overlay::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--blue-500), transparent);
+            animation: scanLine 3s ease-in-out infinite;
+        }
+
+        @keyframes scanLine {
+            0% { top: 0; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        .frame-label {
+            position: absolute;
+            top: 0.75rem;
+            left: 0.75rem;
+            background: rgba(10, 14, 23, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.3rem 0.7rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--blue-400);
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .rec-dot {
+            width: 6px; height: 6px;
+            background: var(--red);
+            border-radius: 50%;
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        /* Camera Feed */
+        .camera-feed {
+            position: relative;
+            aspect-ratio: 4/3;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .camera-feed video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .camera-feed canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: none;
+        }
+
+        .camera-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+        }
+
+        .camera-timestamp {
+            position: absolute;
+            bottom: 0.5rem;
+            right: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--green);
+            background: rgba(0,0,0,0.7);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .camera-label {
+            position: absolute;
+            top: 0.5rem;
+            left: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            color: var(--red);
+            background: rgba(0,0,0,0.7);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        /* Right Sidebar */
+        .sidebar-right {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* Location Display */
+        .location-map {
+            width: 100%;
+            height: 150px;
+            background: rgba(10, 14, 23, 0.5);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .map-placeholder {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+
+        .map-placeholder .icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .location-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .loc-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .loc-row .key {
+            color: var(--text-secondary);
+        }
+
+        .loc-row .val {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--blue-400);
+            font-size: 0.7rem;
+        }
+
+        /* Screenshots Gallery */
+        .screenshots-gallery {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+
+        .screenshot-thumb {
+            aspect-ratio: 16/9;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .screenshot-thumb:hover {
+            border-color: var(--blue-500);
+            box-shadow: var(--glow-blue);
+        }
+
+        .screenshot-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .screenshot-thumb .timestamp {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            padding: 0.2rem;
+            background: rgba(0,0,0,0.8);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.55rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        /* Photo gallery */
+        .photos-gallery {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .photo-thumb {
+            aspect-ratio: 1;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .photo-thumb:hover {
+            border-color: var(--purple);
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+        }
+
+        .photo-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Data Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.72rem;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 0.5rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            border-bottom: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+        }
+
+        .data-table td {
+            padding: 0.4rem 0.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+        }
+
+        .data-table tr:hover td {
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            font-weight: 500;
+        }
+
+        .tag-blue { background: rgba(59,130,246,0.15); color: var(--blue-400); }
+        .tag-green { background: rgba(16,185,129,0.15); color: var(--green); }
+        .tag-red { background: rgba(239,68,68,0.15); color: var(--red); }
+        .tag-yellow { background: rgba(245,158,11,0.15); color: var(--yellow); }
+        .tag-purple { background: rgba(168,85,247,0.15); color: var(--purple); }
+
+        /* Bottom Bar */
+        .bottom-bar {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+
+        .mini-stat {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .mini-stat-icon {
+            width: 45px; height: 45px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .mini-stat-icon.blue { background: rgba(59,130,246,0.15); }
+        .mini-stat-icon.green { background: rgba(16,185,129,0.15); }
+        .mini-stat-icon.purple { background: rgba(168,85,247,0.15); }
+        .mini-stat-icon.red { background: rgba(239,68,68,0.15); }
+
+        .mini-stat-info .value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .mini-stat-info .label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 1rem;
+        }
+
+        .modal-body img {
+            width: 100%;
+            border-radius: 8px;
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--blue-500), var(--blue-400));
+            border-radius: 4px;
+            transition: width 0.5s;
+            width: 0%;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 280px 1fr 280px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+                height: auto;
+                overflow-y: auto;
+            }
+            .target-frame { min-height: 300px; }
+            .bottom-bar {
+                grid-column: 1;
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb {
+            background: var(--blue-600);
+            border-radius: 4px;
+        }
+
+        /* Notification Toast */
+        .toast-container {
+            position: fixed;
+            top: 80px;
+            right: 1rem;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toast {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideInToast 0.3s ease-out;
+            backdrop-filter: blur(10px);
+            min-width: 250px;
+        }
+
+        .toast.success { border-left: 3px solid var(--green); }
+        .toast.error { border-left: 3px solid var(--red); }
+        .toast.info { border-left: 3px solid var(--blue-500); }
+
+        @keyframes slideInToast {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Fullscreen camera preview */
+        .fullscreen-preview {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 100000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .fullscreen-preview.active {
+            display: flex;
+        }
+
+        .fullscreen-preview img {
+            max-width: 90%;
+            max-height: 80%;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .fullscreen-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Session Link Area */
+        .session-link-area {
+            margin-top: 0.8rem;
+            padding: 0.8rem;
+            background: rgba(10, 14, 23, 0.5);
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+        }
+
+        .session-link-area label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .session-link-wrapper {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .session-link-input {
+            flex: 1;
+            padding: 0.5rem;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--blue-400);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            padding: 0.5rem;
+            background: var(--blue-600);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        /* User Info Panel */
+        .user-info-panel {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(10, 14, 23, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .user-info-panel h4 {
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+            color: var(--blue-400);
+        }
+
+        .user-info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .user-info-row .key { color: var(--text-secondary); }
+        .user-info-row .val { font-family: 'JetBrains Mono', monospace; color: var(--text-primary); font-size: 0.7rem; }
+
+        /* Live Indicator */
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .live-dot {
+            width: 8px; height: 8px;
+            background: var(--red);
+            border-radius: 50%;
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        .live-text {
+            font-size: 0.75rem;
+            color: var(--red);
+            font-weight: 600;
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Fullscreen Preview -->
+    <div class="fullscreen-preview" id="fullscreenPreview">
+        <button class="fullscreen-close" onclick="closeFullscreen()">✕</button>
+        <img id="fullscreenImg" src="" alt="">
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">📡</div>
+            <div class="logo-text">
+                <h1>SPIONAGE PANEL <span style="color:var(--blue-400)">v4.0</span></h1>
+                <span>BY TIGERSPORT7 • INTELLIGENCE DASHBOARD</span>
+            </div>
+        </div>
+        <div class="header-status">
+            <div class="status-item">
+                <div class="status-dot green" id="camStatusDot"></div>
+                <span>CAMERAS <span id="camStatusText">OFFLINE</span></span>
+            </div>
+            <div class="status-item">
+                <div class="status-dot green" id="gpsStatusDot"></div>
+                <span>GPS <span id="gpsStatusText">IDLE</span></span>
+            </div>
+            <div class="status-item">
+                <div class="status-dot yellow" id="recStatusDot"></div>
+                <span>REC: <span id="recTime">00:00:00</span></span>
+            </div>
+            <div class="datetime" id="datetime"></div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="main-container">
+
+        <!-- LEFT SIDEBAR -->
+        <div class="sidebar-left">
+            <!-- Target URL Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>🎯 TARGET URL</h3>
+                    <span class="tag tag-blue" id="injectTag">ACTIVE</span>
+                </div>
+                <div class="card-body">
+                    <div class="target-input-group">
+                        <div class="input-wrapper">
+                            <span class="icon">🔗</span>
+                            <input type="url" id="targetUrl" placeholder="https://www.youtube.com/" value="https://www.youtube.com/">
+                        </div>
+                        <div style="display:flex;gap:0.5rem;">
+                            <button class="btn btn-primary" style="flex:1;" onclick="loadTarget()">
+                                ▶ INJETAR
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="clearTarget()">
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+                    <div style="margin-top:0.8rem;">
+                        <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--text-secondary);margin-bottom:0.3rem;">
+                            <span>Injection Status</span>
+                            <span id="injectStatus">IDLE</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="injectProgress"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Session Link -->
+                    <div class="session-link-area">
+                        <label>SESSÃO ATUAL (COMPARTILHE ESTE LINK):</label>
+                        <div class="session-link-wrapper">
+                            <input type="text" class="session-link-input" id="sessionLink" readonly>
+                            <button class="copy-btn" onclick="copySessionLink()">📋</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>📊 METRICS</h3>
+                </div>
+                <div class="card-body">
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="value" id="totalCaptures">0</div>
+                            <div class="label">Capturas</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="value" id="totalPhotos">0</div>
+                            <div class="label">Fotos</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="value" id="uptime">0m</div>
+                            <div class="label">Uptime</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="value" id="fpsCounter">0</div>
+                            <div class="label">FPS</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Log -->
+            <div class="card" style="flex:1;">
+                <div class="card-header">
+                    <h3>📋 ACTIVITY LOG</h3>
+                    <button class="btn btn-sm" style="background:transparent;border:1px solid var(--border);color:var(--text-secondary);" onclick="clearLog()">LIMPAR</button>
+                </div>
+                <div class="card-body" style="padding:0.5rem;">
+                    <div class="activity-log" id="activityLog" style="max-height:300px;">
+                        <!-- Logs will be inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export Button -->
+            <button class="btn btn-success" style="width:100%;" onclick="exportData()">
+                📦 EXPORT ALL DATA
+            </button>
+        </div>
+
+        <!-- CENTER PANEL -->
+        <div class="center-panel">
+            <!-- Target Frame -->
+            <div class="card target-frame">
+                <div class="card-header" style="position:relative;z-index:5;">
+                    <h3>🖥️ TARGET VIEW</h3>
+                    <div style="display:flex;gap:0.5rem;">
+                        <button class="btn btn-sm" style="background:rgba(59,130,246,0.1);border:1px solid var(--border);color:var(--blue-400);" onclick="takeScreenshot()">
+                            📸 SCREENSHOT
+                        </button>
+                        <button class="btn btn-sm" style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);color:var(--purple);" onclick="toggleFullscreenFrame()">
+                            ⛶ FULL
+                        </button>
+                    </div>
+                </div>
+                <div style="position:relative;flex:1;min-height:400px;">
+                    <iframe id="targetIframe" src="about:blank" allow="camera;microphone;fullscreen;autoplay;screen-capture"></iframe>
+                    <div class="frame-overlay"></div>
+                    <div class="frame-label">
+                        <div class="rec-dot"></div>
+                        <span id="frameLabel">NO TARGET LOADED</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Stats Bar -->
+            <div class="bottom-bar">
+                <div class="mini-stat">
+                    <div class="mini-stat-icon blue">📸</div>
+                    <div class="mini-stat-info">
+                        <div class="value" id="miniScreenshots">0</div>
+                        <div class="label">Screen Captures</div>
+                    </div>
+                </div>
+                <div class="mini-stat">
+                    <div class="mini-stat-icon purple">📷</div>
+                    <div class="mini-stat-info">
+                        <div class="value" id="miniPhotos">0</div>
+                        <div class="label">Camera Photos</div>
+                    </div>
+                </div>
+                <div class="mini-stat">
+                    <div class="mini-stat-icon green">📍</div>
+                    <div class="mini-stat-info">
+                        <div class="value" id="miniCoords">--</div>
+                        <div class="label">Last Coordinates</div>
+                    </div>
+                </div>
+                <div class="mini-stat">
+                    <div class="mini-stat-icon red">⏱️</div>
+                    <div class="mini-stat-info">
+                        <div class="value" id="miniUptime">0s</div>
+                        <div class="label">Session Time</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT SIDEBAR -->
+        <div class="sidebar-right">
+            <!-- Camera Feed -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>📷 LIVE CAMERA</h3>
+                    <div style="display:flex;gap:0.5rem;align-items:center;">
+                        <span class="tag tag-red" id="camTag" style="display:none;">● REC</span>
+                        <button class="btn btn-sm" style="background:rgba(59,130,246,0.1);border:1px solid var(--border);color:var(--blue-400);" onclick="capturePhoto()">
+                            📸 PHOTO
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body" style="padding:0.5rem;">
+                    <div class="camera-feed" id="cameraFeed">
+                        <video id="cameraVideo" autoplay playsinline muted></video>
+                        <canvas id="cameraCanvas"></canvas>
+                        <div class="camera-overlay">
+                            <div class="camera-label"><div class="rec-dot"></div> CAM-01</div>
+                            <div class="camera-timestamp" id="cameraTimestamp">00:00:00</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+                        <button class="btn btn-primary btn-sm" style="flex:1;" onclick="startCamera()">
+                            ▶ START
+                        </button>
+                        <button class="btn btn-sm" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--red);" onclick="stopCamera()">
+                            ■ STOP
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>📍 GPS LOCATION</h3>
+                    <span class="tag tag-green" id="gpsTag">WAITING</span>
+                </div>
+                <div class="card-body">
+                    <div class="location-map" id="mapArea">
+                        <div class="map-placeholder">
+                            <div class="icon">🌐</div>
+                            <div>Click "Get Location" to track</div>
+                        </div>
+                    </div>
+                    <div class="location-details" style="margin-top:0.8rem;">
+                        <div class="loc-row">
+                            <span class="key">Latitude</span>
+                            <span class="val" id="latDisplay">--</span>
+                        </div>
+                        <div class="loc-row">
+                            <span class="key">Longitude</span>
+                            <span class="val" id="lngDisplay">--</span>
+                        </div>
+                        <div class="loc-row">
+                            <span class="key">Accuracy</span>
+                            <span class="val" id="accDisplay">--</span>
+                        </div>
+                        <div class="loc-row">
+                            <span class="key">Altitude</span>
+                            <span class="val" id="altDisplay">--</span>
+                        </div>
+                        <div class="loc-row">
+                            <span class="key">Speed</span>
+                            <span class="val" id="speedDisplay">--</span>
+                        </div>
+                        <div class="loc-row">
+                            <span class="key">Address</span>
+                            <span class="val" id="addrDisplay">--</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" style="width:100%;margin-top:0.8rem;" onclick="getLocation()">
+                        📍 GET LOCATION
+                    </button>
+                </div>
+            </div>
+
+            <!-- Screenshots Gallery -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>🖼️ SCREENSHOTS</h3>
+                    <span class="tag tag-blue" id="ssCount">0</span>
+                </div>
+                <div class="card-body">
+                    <div class="screenshots-gallery" id="screenshotsGallery">
+                        <div style="grid-column:1/-1;text-align:center;color:var(--text-secondary);font-size:0.7rem;padding:2rem 0;">
+                            No screenshots yet
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Camera Photos -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>📷 CAMERA PHOTOS</h3>
+                    <span class="tag tag-purple" id="photoCount">0</span>
+                </div>
+                <div class="card-body">
+                    <div class="photos-gallery" id="photosGallery">
+                        <div style="grid-column:1/-1;text-align:center;color:var(--text-secondary);font-size:0.7rem;padding:2rem 0;">
+                            No photos captured
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- User Info Panel -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>👤 TARGET INFO</h3>
+                </div>
+                <div class="card-body">
+                    <div class="user-info-panel">
+                        <h4>DEVICE & CONNECTION</h4>
+                        <div class="user-info-row">
+                            <span class="key">User Agent</span>
+                            <span class="val" id="userInfoUA">--</span>
+                        </div>
+                        <div class="user-info-row">
+                            <span class="key">Platform</span>
+                            <span class="val" id="userInfoPlatform">--</span>
+                        </div>
+                        <div class="user-info-row">
+                            <span class="key">Language</span>
+                            <span class="val" id="userInfoLang">--</span>
+                        </div>
+                        <div class="user-info-row">
+                            <span class="key">Screen Res</span>
+                            <span class="val" id="userInfoScreen">--</span>
+                        </div>
+                        <div class="user-info-row">
+                            <span class="key">Battery</span>
+                            <span class="val" id="userInfoBattery">--</span>
+                        </div>
+                        <div class="user-info-row">
+                            <span class="key">Connection</span>
+                            <span class="val" id="userInfoConnection">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== STATE =====
+        const state = {
+            cameraActive: false,
+            cameraStream: null,
+            screenshots: [],
+            photos: [],
+            location: null,
+            startTime: Date.now(),
+            recSeconds: 0,
+            fps: 0,
+            frameInterval: null,
+            injectTimer: null,
+            totalCaptures: 0,
+            totalPhotos: 0,
+            isTracking: false,
+            sessionId: generateSessionId(),
+            sessionLink: window.location.origin + window.location.pathname + '?session=' + generateSessionId()
+        };
+
+        // Generate unique session ID
+        function generateSessionId() {
+            return 'sess_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+        }
+
+        // ===== INIT =====
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            setInterval(updateRecTime, 1000);
+            setInterval(updateStats, 1000);
+            addLog('System initialized — TigerSport7 Panel v4.0', 'info');
+            addLog('Waiting for target URL...', 'info');
+            
+            // Check if we have a session ID in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const sessionFromUrl = urlParams.get('session');
+            if (sessionFromUrl) {
+                state.sessionId = sessionFromUrl;
+                state.sessionLink = window.location.origin + window.location.pathname + '?session=' + sessionFromUrl;
+                document.getElementById('sessionLink').value = state.sessionLink;
+                addLog(`Session loaded: ${state.sessionId}`, 'success');
+                showToast('Session loaded successfully', 'success');
+            } else {
+                document.getElementById('sessionLink').value = state.sessionLink;
+            }
+            
+            // Get user info
+            getUserInfo();
+        });
+
+        function updateDateTime() {
+            const now = new Date();
+            document.getElementById('datetime').textContent = now.toLocaleString('pt-BR');
+            const camTs = document.getElementById('cameraTimestamp');
+            if (camTs) camTs.textContent = now.toLocaleTimeString('pt-BR');
+        }
+
+        function updateRecTime() {
+            state.recSeconds++;
+            const h = String(Math.floor(state.recSeconds / 3600)).padStart(2, '0');
+            const m = String(Math.floor((state.recSeconds % 3600) / 60)).padStart(2, '0');
+            const s = String(state.recSeconds % 60).padStart(2, '0');
+            document.getElementById('recTime').textContent = `${h}:${m}:${s}`;
+        }
+
+        function updateStats() {
+            const elapsed = Math.floor((Date.now() - state.startTime) / 1000);
+            const mins = Math.floor(elapsed / 60);
+            const secs = elapsed % 60;
+            document.getElementById('uptime').textContent = `${mins}m`;
+            document.getElementById('miniUptime').textContent = `${secs}s`;
+            document.getElementById('totalCaptures').textContent = state.totalCaptures;
+            document.getElementById('totalPhotos').textContent = state.totalPhotos;
+            document.getElementById('miniScreenshots').textContent = state.screenshots.length;
+            document.getElementById('miniPhotos').textContent = state.photos.length;
+        }
+
+        // ===== TOAST NOTIFICATIONS =====
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icons = { success: '✓', error: '✕', info: 'ℹ' };
+            toast.innerHTML = `<span>${icons[type] || 'ℹ'}</span><span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(50px)';
+                toast.style.transition = 'all 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // ===== ACTIVITY LOG =====
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('activityLog');
+            const now = new Date().toLocaleTimeString('pt-BR');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            const typeClass = type === 'success' ? 'success' : type === 'error' ? 'error' : type === 'warn' ? 'warn' : '';
+            entry.innerHTML = `
+                <span class="log-time">[${now}]</span>
+                <span class="log-msg ${typeClass}">${message}</span>
+            `;
+            log.prepend(entry);
+            // Keep max 100 entries
+            while (log.children.length > 100) {
+                log.removeChild(log.lastChild);
+            }
+        }
+
+        function clearLog() {
+            document.getElementById('activityLog').innerHTML = '';
+            addLog('Log cleared', 'info');
+        }
+
+        // ===== CAMERA =====
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }, 
+                    audio: false 
+                });
+                const video = document.getElementById('cameraVideo');
+                video.srcObject = stream;
+                state.cameraStream = stream;
+                state.cameraActive = true;
+                
+                document.getElementById('camTag').style.display = 'flex';
+                document.getElementById('gpsTag').textContent = 'LIVE';
+                document.getElementById('gpsTag').className = 'tag tag-red';
+                document.getElementById('camStatusDot').className = 'status-dot green';
+                document.getElementById('camStatusText').textContent = 'ONLINE';
+                
+                addLog('Camera activated — front feed online', 'success');
+                showToast('Camera activated successfully', 'success');
+                
+                // FPS counter
+                let frames = 0;
+                let lastFpsUpdate = Date.now();
+                state.frameInterval = setInterval(() => {
+                    frames++;
+                    if (Date.now() - lastFpsUpdate >= 1000) {
+                        state.fps = frames;
+                        document.getElementById('fpsCounter').textContent = frames;
+                        frames = 0;
+                        lastFpsUpdate = Date.now();
+                    }
+                }, 100);
+            } catch (err) {
+                addLog(`Camera error: ${err.message}`, 'error');
+                showToast('Failed to access camera', 'error');
+            }
+        }
+
+        function stopCamera() {
+            if (state.cameraStream) {
+                state.cameraStream.getTracks().forEach(track => track.stop());
+                state.cameraStream = null;
+            }
+            state.cameraActive = false;
+            document.getElementById('camTag').style.display = 'none';
+            document.getElementById('fpsCounter').textContent = '0';
+            document.getElementById('camStatusDot').className = 'status-dot red';
+            document.getElementById('camStatusText').textContent = 'OFFLINE';
+            if (state.frameInterval) clearInterval(state.frameInterval);
+            addLog('Camera deactivated', 'warn');
+            showToast('Camera stopped', 'info');
+        }
+
+        function capturePhoto() {
+            if (!state.cameraActive) {
+                showToast('Camera not active!', 'error');
+                return;
+            }
+            
+            const video = document.getElementById('cameraVideo');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+            const timestamp = new Date().toLocaleTimeString('pt-BR');
+            
+            state.photos.push({ data: dataUrl, time: timestamp });
+            state.totalPhotos++;
+            
+            addToGallery('photosGallery', dataUrl, timestamp, 'photo');
+            updateCounts();
+            addLog(`Photo captured at ${timestamp}`, 'success');
+            showToast('Photo captured and saved', 'success');
+        }
+
+        // ===== SCREENSHOT =====
+        function takeScreenshot() {
+            const iframe = document.getElementById('targetIframe');
+            const now = new Date();
+            const timestamp = now.toLocaleTimeString('pt-BR');
+            
+            // Try to get iframe content
+            try {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                
+                // Use html2canvas approach manually or just screenshot the iframe area
+                const iframeEl = iframe;
+                
+                // Create a canvas from the iframe by drawing it
+                const canvas = document.createElement('canvas');
+                
+                // Fallback: screenshot using the iframe's current visual state
+                // We'll use a simpler approach: capture what we can
+                
+                // Method: Draw iframe content onto canvas
+                try {
+                    const iframeWindow = iframe.contentWindow;
+                    if (iframeWindow && iframeWindow.innerWidth > 0) {
+                        canvas.width = iframeEl.clientWidth;
+                        canvas.height = iframeEl.clientHeight;
+                        const ctx = canvas.getContext('2d');
+                        
+                        // Fill with white background
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        
+                        // Draw iframe content
+                        ctx.drawImage(iframeEl, 0, 0, canvas.width, canvas.height);
+                        
+                        const dataUrl = canvas.toDataURL('image/png');
+                        state.screenshots.push({ data: dataUrl, time: timestamp });
+                        state.totalCaptures++;
+                        
+                        addToGallery('screenshotsGallery', dataUrl, timestamp, 'screenshot');
+                        updateCounts();
+                        addLog(`Screenshot captured — ${document.getElementById('targetUrl').value || 'target'}`, 'success');
+                        showToast('Screenshot captured', 'success');
+                        return;
+                    }
+                } catch(e) {
+                    // Cross-origin, fallback
+                }
+            } catch(e) {}
+            
+            // Fallback: create a styled screenshot representation
+            const canvas = document.createElement('canvas');
+            canvas.width = 800;
+            canvas.height = 600;
+            const ctx = canvas.getContext('2d');
+            
+            // Dark background
+            ctx.fillStyle = '#0a0e17';
+            ctx.fillRect(0, 0, 800, 600);
+            
+            // Border
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(10, 10, 780, 580);
+            
+            // Title bar
+            ctx.fillStyle = '#1a2035';
+            ctx.fillRect(10, 10, 780, 30);
+            
+            ctx.fillStyle = '#64748b';
+            ctx.font = '12px monospace';
+            ctx.fillText(document.getElementById('targetUrl').value || 'https://target.com', 20, 30);
+            
+            // Content area
+            ctx.fillStyle = '#111827';
+            ctx.fillRect(10, 40, 780, 550);
+            
+            // Scanning lines effect
+            for (let i = 0; i < 550; i += 4) {
+                ctx.fillStyle = `rgba(59, 130, 246, ${0.02 + Math.random() * 0.02})`;
+                ctx.fillRect(10, 40 + i, 780, 2);
+            }
+            
+            // Timestamp
+            ctx.fillStyle = '#10b981';
+            ctx.font = '10px monospace';
+            ctx.fillText(`[CAPTURED: ${timestamp}]`, 20, 580);
+            
+            // Label
+            ctx.fillStyle = '#60a5fa';
+            ctx.font = 'bold 14px monospace';
+            ctx.fillText('SCREEN CAPTURE', 20, 560);
+            
+            const dataUrl = canvas.toDataURL('image/png');
+            state.screenshots.push({ data: dataUrl, time: timestamp });
+            state.totalCaptures++;
+            
+            addToGallery('screenshotsGallery', dataUrl, timestamp, 'screenshot');
+            updateCounts();
+            addLog(`Screenshot captured (fallback mode)`, 'warn');
+            showToast('Screenshot captured (fallback)', 'info');
+        }
+
+        // ===== GALLERY HELPERS =====
+        function addToGallery(containerId, dataUrl, timestamp, type) {
+            const container = document.getElementById(containerId);
+            
+            // Remove empty message
+            if (container.children.length === 1 && container.children[0].tagName !== 'IMG') {
+                container.innerHTML = '';
+            }
+            
+            const div = document.createElement('div');
+            div.className = type === 'photo' ? 'photo-thumb' : 'screenshot-thumb';
+            div.innerHTML = `
+                <img src="${dataUrl}" alt="Capture" onclick="openFullscreen('${dataUrl}')">
+                <div class="timestamp">${timestamp}</div>
+            `;
+            container.prepend(div);
+        }
+
+        function openFullscreen(src) {
+            document.getElementById('fullscreenImg').src = src;
+            document.getElementById('fullscreenPreview').classList.add('active');
+        }
+
+        function closeFullscreen() {
+            document.getElementById('fullscreenPreview').classList.remove('active');
+        }
+
+        function updateCounts() {
+            document.getElementById('ssCount').textContent = state.screenshots.length;
+            document.getElementById('photoCount').textContent = state.photos.length;
+        }
+
+        // ===== LOCATION =====
+        function getLocation() {
+            if (!navigator.geolocation) {
+                addLog('Geolocation not supported', 'error');
+                showToast('Geolocation not available', 'error');
+                return;
+            }
+
+            addLog('Requesting GPS coordinates...', 'info');
+            document.getElementById('gpsTag').textContent = 'ACQUIRING';
+            document.getElementById('gpsTag').className = 'tag tag-yellow';
+            document.getElementById('gpsStatusDot').className = 'status-dot yellow';
+            document.getElementById('gpsStatusText').textContent = 'SEARCHING';
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    state.location = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                        accuracy: position.coords.accuracy,
+                        altitude: position.coords.altitude,
+                        speed: position.coords.speed,
+                        timestamp: position.timestamp
+                    };
+
+                    document.getElementById('latDisplay').textContent = state.location.lat.toFixed(6);
+                    document.getElementById('lngDisplay').textContent = state.location.lng.toFixed(6);
+                    document.getElementById('accDisplay').textContent = `±${state.location.accuracy?.toFixed(0) || '?'}m`;
+                    document.getElementById('altDisplay').textContent = state.location.altitude != null ? `${state.location.altitude.toFixed(1)}m` : 'N/A';
+                    document.getElementById('speedDisplay').textContent = state.location.speed != null ? `${(state.location.speed * 3.6).toFixed(1)}km/h` : '0km/h';
+                    document.getElementById('miniCoords').textContent = `${state.location.lat.toFixed(2)},${state.location.lng.toFixed(2)}`;
+
+                    // Reverse geocode
+                    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${state.location.lat}&lon=${state.location.lng}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            const addr = data.display_name?.split(',').slice(0, 2).join(',') || 'Unknown location';
+                            document.getElementById('addrDisplay').textContent = addr;
+                            
+                            // Show map
+                            document.getElementById('mapArea').innerHTML = `
+                                <iframe 
+                                    src="https://www.openstreetmap.org/export/embed.html?bbox=${state.location.lng-0.005},${state.location.lat-0.003},${state.location.lng+0.005},${state.location.lat+0.003}&layer=mapnik&marker=${state.location.lat},${state.location.lng}"
+                                    style="width:100%;height:100%;border:none;border-radius:8px;"
+                                    loading="lazy">
+                                </iframe>
+                            `;
+                        })
+                        .catch(() => {
+                            document.getElementById('addrDisplay').textContent = 'Could not resolve address';
+                            document.getElementById('mapArea').innerHTML = `
+                                <div style="text-align:center;padding:1rem;">
+                                    <div style="font-size:2rem;margin-bottom:0.5rem;">📍</div>
+                                    <div style="font-size:0.7rem;color:var(--text-secondary);font-family:monospace;">
+                                        ${state.location.lat.toFixed(6)}, ${state.location.lng.toFixed(6)}<br>
+                                        Accuracy: ±${state.location.accuracy?.toFixed(0)}m
+                                    </div>
+                                </div>
+                            `;
+                        });
+
+                    document.getElementById('gpsTag').textContent = 'LOCKED';
+                    document.getElementById('gpsTag').className = 'tag tag-green';
+                    document.getElementById('gpsStatusDot').className = 'status-dot green';
+                    document.getElementById('gpsStatusText').textContent = 'TRACKING';
+                    addLog(`Location acquired — ${state.location.lat.toFixed(4)}, ${state.location.lng.toFixed(4)}`, 'success');
+                    showToast('Location tracked successfully', 'success');
+                },
+                (error) => {
+                    addLog(`Location error: ${error.message}`, 'error');
+                    document.getElementById('gpsTag').textContent = 'ERROR';
+                    document.getElementById('gpsTag').className = 'tag tag-red';
+                    document.getElementById('gpsStatusDot').className = 'status-dot red';
+                    document.getElementById('gpsStatusText').textContent = 'FAILED';
+                    showToast('Failed to get location', 'error');
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+        }
+
+        // ===== TARGET URL LOADING =====
+        function loadTarget() {
+            const url = document.getElementById('targetUrl').value.trim();
+            if (!url) {
+                showToast('Please enter a URL', 'error');
+                return;
+            }
+
+            const iframe = document.getElementById('targetIframe');
+            const progress = document.getElementById('injectProgress');
+            const status = document.getElementById('injectStatus');
+            const label = document.getElementById('frameLabel');
+
+            // Reset
+            progress.style.width = '0%';
+            status.textContent = 'CONNECTING';
+            status.style.color = 'var(--yellow)';
+            label.textContent = 'LOADING...';
+
+            addLog(`Injecting target: ${url}`, 'info');
+
+            // Animate progress
+            let p = 0;
+            const interval = setInterval(() => {
+                p += Math.random() * 15;
+                if (p > 95) p = 95;
+                progress.style.width = p + '%';
+            }, 200);
+
+            iframe.src = url;
+            
+            iframe.onload = () => {
+                clearInterval(interval);
+                progress.style.width = '100%';
+                status.textContent = 'CONNECTED';
+                status.style.color = 'var(--green)';
+                label.textContent = url;
+                updateCounts();
+                addLog(`Target loaded successfully: ${url}`, 'success');
+                showToast(`Target connected: ${url}`, 'success');
+            };
+
+            iframe.onerror = () => {
+                clearInterval(interval);
+                progress.style.width = '100%';
+                status.textContent = 'ERROR';
+                status.style.color = 'var(--red)';
+                label.textContent = 'CONNECTION FAILED';
+                addLog(`Failed to load: ${url}`, 'error');
+                showToast('Failed to load target', 'error');
+            };
+
+            // Timeout fallback
+            setTimeout(() => {
+                if (status.textContent === 'CONNECTING') {
+                    clearInterval(interval);
+                    progress.style.width = '100%';
+                    status.textContent = 'TIMEOUT';
+                    status.style.color = 'var(--yellow)';
+                    label.textContent = 'TIMEOUT — MAY BE IFRAME BLOCKED';
+                    addLog(`Load timeout for: ${url}`, 'warn');
+                    showToast('Target may be blocking iframe embed', 'warn');
+                }
+            }, 10000);
+        }
+
+        function clearTarget() {
+            const iframe = document.getElementById('targetIframe');
+            iframe.src = 'about:blank';
+            document.getElementById('injectStatus').textContent = 'IDLE';
+            document.getElementById('injectStatus').style.color = 'var(--text-secondary)';
+            document.getElementById('injectProgress').style.width = '0%';
+            document.getElementById('frameLabel').textContent = 'NO TARGET LOADED';
+            addLog('Target cleared', 'info');
+        }
+
+        function toggleFullscreenFrame() {
+            const iframe = document.getElementById('targetIframe');
+            if (iframe.requestFullscreen) {
+                iframe.requestFullscreen();
+            } else if (iframe.webkitRequestFullscreen) {
+                iframe.webkitRequestFullscreen();
+            }
+        }
+
+        // ===== EXPORT DATA =====
+        function exportData() {
+            const data = {
+                exportedAt: new Date().toISOString(),
+                sessionDuration: `${Math.floor((Date.now() - state.startTime) / 1000)}s`,
+                screenshots: state.screenshots.map(s => ({ time: s.time, size: s.data.length })),
+                photos: state.photos.map(p => ({ time: p.time, size: p.data.length })),
+                location: state.location,
+                stats: {
+                    totalCaptures: state.totalCaptures,
+                    totalPhotos: state.totalPhotos,
+                    fps: state.fps
+                }
+            };
+
+            // Create JSON file
+            const jsonBlob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const jsonUrl = URL.createObjectURL(jsonBlob);
+            const a = document.createElement('a');
+            a.href = jsonUrl;
+            a.download = `spionage-data-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(jsonUrl);
+
+            // Also export images as zip-like structure
+            addLog(`Exporting ${state.screenshots.length} screenshots + ${state.photos.length} photos`, 'success');
+            showToast(`Data exported! (${state.screenshots.length + state.photos.length} items)`, 'success');
+
+            // Download each image as separate files
+            state.screenshots.forEach((s, i) => {
+                const link = document.createElement('a');
+                link.href = s.data;
+                link.download = `screenshot_${i + 1}_${s.time.replace(/:/g, '-')}.png`;
+                link.click();
+            });
+
+            state.photos.forEach((p, i) => {
+                const link = document.createElement('a');
+                link.href = p.data;
+                link.download = `photo_${i + 1}_${p.time.replace(/:/g, '-')}.jpg`;
+                link.click();
+            });
+        }
+
+        // ===== AUTO FEATURES =====
+        // Auto-capture screenshot every 30 seconds when target is loaded
+        setInterval(() => {
+            const iframe = document.getElementById('targetIframe');
+            if (iframe.src && iframe.src !== 'about:blank' && iframe.src !== '') {
+                // Only auto-capture if user has clicked somewhere
+                if (state.isTracking) {
+                    takeScreenshot();
+                }
+            }
+        }, 30000);
+
+        // Listen for iframe interaction
+        document.getElementById('targetIframe').addEventListener('click', () => {
+            state.isTracking = true;
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeFullscreen();
+            if (e.ctrlKey && e.key === 's') { e.preventDefault(); takeScreenshot(); }
+            if (e.ctrlKey && e.key === 'p') { e.preventDefault(); capturePhoto(); }
+            if (e.key === 'l') getLocation();
+        });
+
+        // Close modal on overlay click
+        document.getElementById('fullscreenPreview').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('fullscreenPreview')) closeFullscreen();
+        });
+
+        // ===== USER INFO =====
+        function getUserInfo() {
+            document.getElementById('userInfoUA').textContent = navigator.userAgent.substring(0, 50) + '...';
+            document.getElementById('userInfoPlatform').textContent = navigator.platform;
+            document.getElementById('userInfoLang').textContent = navigator.language;
+            document.getElementById('userInfoScreen').textContent = `${screen.width}x${screen.height}`;
+            
+            // Battery
+            if (navigator.getBattery) {
+                navigator.getBattery().then(battery => {
+                    document.getElementById('userInfoBattery').textContent = `${Math.round(battery.level * 100)}% ${battery.charging ? '(Charging)' : ''}`;
+                }).catch(() => {
+                    document.getElementById('userInfoBattery').textContent = 'N/A';
+                });
+            } else {
+                document.getElementById('userInfoBattery').textContent = 'N/A';
+            }
+            
+            // Connection
+            if (navigator.connection) {
+                document.getElementById('userInfoConnection').textContent = `${navigator.connection.effectiveType || 'unknown'} (${navigator.connection.downlink || '?'} Mbps)`;
+            } else {
+                document.getElementById('userInfoConnection').textContent = 'N/A';
+            }
+        }
+
+        // ===== COPY SESSION LINK =====
+        function copySessionLink() {
+            const input = document.getElementById('sessionLink');
+            input.select();
+            document.execCommand('copy');
+            showToast('Session link copied to clipboard!', 'success');
+            addLog('Session link copied to clipboard', 'info');
+        }
+    </script>
+</body>
+</html>
